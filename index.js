@@ -1,7 +1,10 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const ShortId = require('shortid')
 const app = express();
+let bodyParser = require('body-parser');
+const validator = require('validator');
 
 // Basic Configuration
 const port = process.env.PORT || 3000;
@@ -9,6 +12,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 
 app.use('/public', express.static(`${process.cwd()}/public`));
+
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
 
 app.get('/', function(req, res) {
   res.sendFile(process.cwd() + '/views/index.html');
@@ -19,6 +25,26 @@ app.get('/api/hello', function(req, res) {
   res.json({ greeting: 'hello API' });
 });
 
+let Urls = {};
+ 
+app.post('/api/shorturl', (req, res) =>{
+  let url = req.body.url;
+  let short_url = ShortId.generate();
+  
+  if(!validator.isURL(url)){
+    return res.status(400).json({error: "invalid url"});
+  }
+
+  Urls[short_url] = url;
+
+  return res.json({original_url: url, short_url});
+});
+
+app.get('/api/shorturl/:shortenedUrl', (req, res) => {
+  const short_url = req.params.shortenedUrl;
+
+  res.redirect(Urls[short_url]);
+});
 app.listen(port, function() {
   console.log(`Listening on port ${port}`);
 });
