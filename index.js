@@ -28,12 +28,13 @@ app.get('/api/hello', function(req, res) {
 let Urls = {};
  
 app.post('/api/shorturl', (req, res) =>{
-  let url = req.body.url;
-  let short_url = ShortId.generate();
   
+  let url = req.body.url;
   if(!validator.isURL(url)){
-    return res.status(400).json({error: "invalid url"});
+    return res.json({error: 'invalid url'});
   }
+
+  let short_url = ShortId.generate();
 
   Urls[short_url] = url;
 
